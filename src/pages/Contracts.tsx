@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react"
-import { Button, ButtonGroup, Callout, Card, Checkbox, Classes, Divider, H1, H5, HTMLSelect, HTMLTable, Icon, InputGroup, MenuItem, NumericInput, Tag } from "@blueprintjs/core"
+import { Button, ButtonGroup, Callout, Card, Checkbox, Classes, Divider, H1, H5, HTMLSelect, HTMLTable, Icon, InputGroup, Intent, MenuItem, NumericInput, Tag } from "@blueprintjs/core"
 import {
     useTable,
     usePagination,
@@ -7,7 +7,8 @@ import {
     useGlobalFilter,
     useAsyncDebounce,
     useRowSelect,
-    useExpanded
+    useExpanded,
+    Column
 } from "react-table";
 // A great library for fuzzy filtering/sorting items
 import { matchSorter } from "match-sorter";
@@ -43,9 +44,19 @@ export interface IContractProps {
     checkStatus: (name: string, status: CheckStatus) => void
 }
 
+function mapCheckStatusIntent(status: CheckStatus): Intent {
+    switch (status) {
+        case CheckStatus.CHECKED:
+            return Intent.SUCCESS
+        case CheckStatus.ERROR:
+            return Intent.DANGER
+        case CheckStatus.NOTSET:
+            return Intent.NONE
+    }
+}
 export default function Contracts(props: IContractProps) {
 
-    const cols = useMemo(() => [
+    const cols: Column[] = useMemo(() => [
         {
             // Make an expander cell
             Header: () => null, // No header
@@ -89,10 +100,12 @@ export default function Contracts(props: IContractProps) {
             }
         },
         // todo custom
-        // {
-        //     Header: "checks",
-        //     accessor: "checks"
-        // }
+        {
+            Header: "Checks",
+            accessor: "checks",
+            disableFilters: true,
+            Cell: ({ value }) => (<div className="flex space-x-1">{value.map(v => <Tag intent={mapCheckStatusIntent(v.status)}>{v.code}</Tag>)}</div>)
+        }
     ], [])
 
     const data = useMemo(() => props.data.map(d => ({ ...d, meta: `${d.fullName}-${d.company}\n${d.dealer}@${d.store}` })), [props.data])
