@@ -1,5 +1,5 @@
 import React, { useMemo } from "react"
-import { Card, Checkbox, Classes, H1, HTMLTable, Icon } from "@blueprintjs/core"
+import { Card, Checkbox, Classes, H1, HTMLTable, Icon, InputGroup, MenuItem, Tag } from "@blueprintjs/core"
 import {
     useTable,
     usePagination,
@@ -12,6 +12,7 @@ import {
 // A great library for fuzzy filtering/sorting items
 import { matchSorter } from "match-sorter";
 import 'regenerator-runtime/runtime';
+import { ItemRenderer, MultiSelect } from "@blueprintjs/select";
 
 
 export type ContractType = "corp-prepaid" | "corp-postpaid" | "ind-postpaid"
@@ -67,7 +68,9 @@ export default function Contracts(props: IContractProps) {
         },
         {
             Header: "Region",
-            accessor: "region"
+            accessor: "region",
+            Filter: SelectColumnFilter,
+            filter: "includesSome"
         },
         {
             Header: "Contract Info",
@@ -121,10 +124,9 @@ export default function Contracts(props: IContractProps) {
                 // The header can use the table's getToggleAllRowsSelectedProps method
                 // to render a checkbox
                 Header: (opts) => {
-                    console.log(opts)
                     return (
                         <div>
-                            <Checkbox {...opts.getToggleAllPageRowsSelectedProps()} />
+                            {/* <Checkbox {...opts.getToggleAllPageRowsSelectedProps()} /> */}
                         </div>
                     )
                 },
@@ -201,11 +203,11 @@ export default function Contracts(props: IContractProps) {
                             textAlign: "left"
                         }}
                     >
-                        <GlobalFilter
+                        {/* <GlobalFilter
                             preGlobalFilteredRows={preGlobalFilteredRows}
                             globalFilter={globalFilter}
                             setGlobalFilter={setGlobalFilter}
-                        />
+                        /> */}
                     </th>
                 </tr>
             </thead>
@@ -310,15 +312,46 @@ function GlobalFilter({
                     onChange(e.target.value);
                 }}
                 placeholder={`${count} records...`}
-                style={{
-                    fontSize: "1.1rem",
-                    border: "0"
-                }}
+                className={Classes.INPUT}
             />
         </span>
     );
 }
 
+function escapeRegExpChars(text: string) {
+    return text.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+function highlightText(text: string, query: string) {
+    let lastIndex = 0;
+    const words = query
+        .split(/\s+/)
+        .filter(word => word.length > 0)
+        .map(escapeRegExpChars);
+    if (words.length === 0) {
+        return [text];
+    }
+    const regexp = new RegExp(words.join("|"), "gi");
+    const tokens: React.ReactNode[] = [];
+    while (true) {
+        const match = regexp.exec(text);
+        if (!match) {
+            break;
+        }
+        const length = match[0].length;
+        const before = text.slice(lastIndex, regexp.lastIndex - length);
+        if (before.length > 0) {
+            tokens.push(before);
+        }
+        lastIndex = regexp.lastIndex;
+        tokens.push(<strong key={lastIndex}>{match[0]}</strong>);
+    }
+    const rest = text.slice(lastIndex);
+    if (rest.length > 0) {
+        tokens.push(rest);
+    }
+    return tokens;
+}
 // Define a default UI for filtering
 function DefaultColumnFilter({
     column: { filterValue, preFilteredRows, setFilter }
@@ -326,12 +359,12 @@ function DefaultColumnFilter({
     const count = preFilteredRows.length;
 
     return (
-        <input
+        <InputGroup
+            leftIcon={"search"}
             value={filterValue || ""}
-            onChange={(e) => {
-                setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
-            }}
-            placeholder={`Search ${count} records...`}
+            onChange={e => setFilter(e.target.value) || undefined}
+            placeholder={"Search records"}
+            rightElement={<Tag minimal={true}>{count}</Tag>}
         />
     );
 }
@@ -339,7 +372,7 @@ function DefaultColumnFilter({
 // This is a custom filter UI for selecting
 // a unique option from a list
 function SelectColumnFilter({
-    column: { filterValue, setFilter, preFilteredRows, id }
+    column: { filterValue = [], setFilter, preFilteredRows, id }
 }) {
     // Calculate the options for filtering
     // using the preFilteredRows
@@ -351,21 +384,50 @@ function SelectColumnFilter({
         return [...options.values()];
     }, [id, preFilteredRows]);
 
+    const handleTagRemove = (_tag: React.ReactNode, index: number) => {
+        setFilter(filterValue.filter((v, i) => i !== index))
+    };
+
+    const StringMultiSelect = MultiSelect.ofType<string>();
+    const renderOpt: ItemRenderer<string> = (opt, { handleClick, modifiers, query }) => {
+        if (!modifiers.matchesPredicate) {
+            return null;
+        }
+        const text = opt
+        return (
+            <MenuItem
+                active={modifiers.active}
+                disabled={modifiers.disabled}
+                // label={film.year.toString()}
+                key={opt}
+                onClick={handleClick}
+                text={highlightText(text, query)}
+            />
+        );
+    };
     // Render a multi-select box
+
     return (
-        <select
-            value={filterValue}
-            onChange={(e) => {
-                setFilter(e.target.value || undefined);
+        <StringMultiSelect
+            itemRenderer={renderOpt}
+            tagRenderer={t => <Tag minimal>{t}</Tag>}
+            items={["KIEV", "LVIV", "URFA", "SAMSUN"].filter(v => !filterValue.includes(v))}
+            tagInputProps={{
+                tagProps: {
+                    className: Classes.DARK,
+                    minimal: true,
+                },
+                onRemove: handleTagRemove,
             }}
-        >
-            <option value="">All</option>
-            {options.map((option, i) => (
-                <option key={i} value={option}>
-                    {option}
-                </option>
-            ))}
-        </select>
+            selectedItems={filterValue}
+            onItemSelect={e => setFilter(filterValue.includes(e) ? filterValue.filter(v => v !== e) : [...filterValue, e])}
+
+        // onChange={(e) => {
+        //     let value = Array.from(e.target.selectedOptions, option => option.value);
+        //     console.log(value)
+        //     setFilter(value || undefined);
+        // }}
+        />
     );
 }
 
