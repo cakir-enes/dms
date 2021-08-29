@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
-import Diagram from "./pages/Diagram";
-import { BrowserRouter, Switch, Route, useRouteMatch, Link, Redirect } from "react-router-dom";
-import { Alignment, Button, ButtonGroup, Card, Icon, Navbar, NavbarDivider } from '@blueprintjs/core';
-import Contracts, { CheckStatus, IContractProps } from "./pages/Contracts"
+import React, {useState} from 'react'
+import {BrowserRouter, Link, Redirect, Route, Switch} from "react-router-dom";
+import {Alignment, Button, ButtonGroup, Navbar} from '@blueprintjs/core';
+import Contracts, {CheckStatus} from "./pages/Contracts"
 import Dashboard from './pages/Dashboard';
 
 let genData = () => {
@@ -60,6 +59,12 @@ const App = () => {
       let c = d[i].checks.find(c => c.code == code)
       if (c) {
         c.status = status
+      }
+      if(d[i].checks.some(c => c.status === CheckStatus.ERROR)){
+        d[i].status = "WITH_ERR"
+      }
+      if(d[i].checks.filter(c => c.status === CheckStatus.CHECKED).length === d[i].checks.length){
+        d[i].status = "NO_ERR"
       }
       return [...d]
     })
