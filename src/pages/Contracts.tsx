@@ -1,5 +1,5 @@
-import React, { useMemo } from "react"
-import { Card, Checkbox, Classes, H1, HTMLTable, Icon, InputGroup, MenuItem, Tag } from "@blueprintjs/core"
+import React, { useEffect, useMemo, useState } from "react"
+import { Button, ButtonGroup, Callout, Card, Checkbox, Classes, Divider, H1, H5, HTMLSelect, HTMLTable, Icon, InputGroup, MenuItem, NumericInput, Tag } from "@blueprintjs/core"
 import {
     useTable,
     usePagination,
@@ -18,6 +18,14 @@ import { ItemRenderer, MultiSelect } from "@blueprintjs/select";
 export type ContractType = "corp-prepaid" | "corp-postpaid" | "ind-postpaid"
 export type StatusType = "IN_PROGRESS" | "WITH_ERR" | "NO_ERR" | "NEW"
 
+export enum CheckStatus {
+    "CHECKED",
+    "ERROR",
+    "NOTSET"
+}
+
+
+
 export interface IContractProps {
     data: {
         line: string
@@ -30,10 +38,10 @@ export interface IContractProps {
         type: string,
         date: Date,
         status: string,
-    }[]
+        checks: { contract: string, code: string, status: CheckStatus }[],
+    }[],
+    checkStatus: (name: string, status: CheckStatus) => void
 }
-
-
 
 export default function Contracts(props: IContractProps) {
 
@@ -76,13 +84,14 @@ export default function Contracts(props: IContractProps) {
             Header: "Contract Info",
             accessor: "meta"
         },
-        {
-            Header: "checks",
-            accessor: "checks"
-        }
+        // todo custom
+        // {
+        //     Header: "checks",
+        //     accessor: "checks"
+        // }
     ], [])
 
-    const data = useMemo(() => props.data.map(d => ({ ...d, checks: "SC", meta: `${d.fullName}-${d.company}\n${d.dealer}@${d.store}` })), [props.data])
+    const data = useMemo(() => props.data.map(d => ({ ...d, meta: `${d.fullName}-${d.company}\n${d.dealer}@${d.store}` })), [props.data])
 
 
     const filterTypes = React.useMemo(
@@ -133,7 +142,7 @@ export default function Contracts(props: IContractProps) {
                 // The cell can use the individual row's getToggleRowSelectedProps method
                 // to the render a checkbox
                 Cell: ({ row }) => {
-                    console.log(row)
+                    // console.log(row)
                     return (
                         <Checkbox />
                     )
@@ -173,13 +182,9 @@ export default function Contracts(props: IContractProps) {
     } = tableInstance
 
 
-
-
-
-
     return <Card>
         <H1>Contracts</H1>
-        <HTMLTable className={Classes.HTML_TABLE_STRIPED} {...getTableProps()}>
+        <HTMLTable className={Classes.HTML_TABLE_STRIPED + " " + Classes.INTERACTIVE} {...getTableProps()}>
             <thead>
                 {// Loop over the header rows
                     headerGroups.map(headerGroup => (
@@ -221,7 +226,7 @@ export default function Contracts(props: IContractProps) {
                         return (
                             // Apply the row prop
                             <React.Fragment>
-                                <tr {...row.getRowProps()}>
+                                <tr {...row.getRowProps()} onClick={() => row.toggleRowExpanded()}>
                                     {row.cells.map((cell) => {
                                         return (
                                             <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
@@ -231,8 +236,20 @@ export default function Contracts(props: IContractProps) {
                                 {row.isExpanded ? (
                                     <tr>
                                         <td colSpan={visibleColumns.length}>
-                                            <>blah</>
-                                            {/* {renderRowSubComponent({ row })} */}
+                                            {<Card>
+                                                {row.original.checks.map(check => {
+                                                    return (
+                                                        <div style={{ display: "flex" }}>
+                                                            <span className={"w-44 text-base font-bold my-auto"}>{check.name}</span>
+                                                            <ButtonGroup>
+                                                                <Button intent={check.status == CheckStatus.CHECKED ? "success" : "none"} minimal large icon="tick" onClick={() => props.checkStatus(row.original.contractID, check.code, CheckStatus.CHECKED)} />
+                                                                <Divider />
+                                                                <Button intent={check.status == CheckStatus.ERROR ? "danger" : "none"} minimal large icon="cross" onClick={() => props.checkStatus(row.original.contractID, check.code, CheckStatus.ERROR)} />
+                                                            </ButtonGroup>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </Card>}
                                         </td>
                                     </tr>
                                 ) : null}
@@ -262,17 +279,17 @@ export default function Contracts(props: IContractProps) {
             </span>
             <span>
                 | Go to page:{' '}
-                <input
+                <NumericInput
                     type="number"
                     defaultValue={pageIndex + 1}
                     onChange={e => {
                         const page = e.target.value ? Number(e.target.value) - 1 : 0
                         gotoPage(page)
                     }}
-                    style={{ width: '100px' }}
+
                 />
             </span>{' '}
-            <select
+            <HTMLSelect
                 value={pageSize}
                 onChange={e => {
                     setPageSize(Number(e.target.value))
@@ -283,7 +300,7 @@ export default function Contracts(props: IContractProps) {
                         Show {pageSize}
                     </option>
                 ))}
-            </select>
+            </HTMLSelect>
         </div>
     </Card >
 }
