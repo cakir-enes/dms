@@ -65,6 +65,15 @@ const App = () => {
     })
   }
 
+  let registerDocs = (docs: number[]) => {
+    setData(data => {
+      docs.forEach(i => {
+        data[i].status = "IN_PROGRESS"
+      })
+      return [...data]
+    })
+  }
+
   return (
     <div className="bp4-dark">
 
@@ -72,7 +81,7 @@ const App = () => {
         <Switch>
           <Route exact path='/contracts'>
             <Menubar page={"Contracts"} />
-            <Contracts data={data} checkStatus={checkStatus} />
+            <Contracts data={data} checkStatus={checkStatus} registerDocs={registerDocs} />
           </Route>
 
           <Route exact path='/dashboard'>

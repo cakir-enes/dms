@@ -41,7 +41,8 @@ export interface IContractProps {
         status: string,
         checks: { contract: string, code: string, status: CheckStatus }[],
     }[],
-    checkStatus: (name: string, status: CheckStatus) => void
+    checkStatus: (contract: string, code: string, status: CheckStatus) => void,
+    registerDocs: (contractIDs: number[]) => void
 }
 
 function mapCheckStatusIntent(status: CheckStatus): Intent {
@@ -54,6 +55,7 @@ function mapCheckStatusIntent(status: CheckStatus): Intent {
             return Intent.NONE
     }
 }
+
 export default function Contracts(props: IContractProps) {
 
     const cols: Column[] = useMemo(() => [
@@ -141,6 +143,7 @@ export default function Contracts(props: IContractProps) {
         []
     );
 
+
     //@ts-ignore
     const tableInstance = useTable({ columns: cols, data, defaultColumn, filterTypes, autoResetExpanded: false, autoResetFilters: false }, useFilters, useGlobalFilter, useExpanded, usePagination, useRowSelect, hooks => {
         hooks.visibleColumns.push(cols => ([
@@ -162,8 +165,14 @@ export default function Contracts(props: IContractProps) {
                 // to the render a checkbox
                 Cell: ({ row }) => {
                     // console.log(row)
+                    let [color, text] = bgColorAndText(row.original.checks, row.original.status)
                     return (
-                        <Checkbox />
+                        <div className="flex justify-around">
+                            <Checkbox className="w-4" {...row.getToggleRowSelectedProps()} />
+                            <Tag style={{ background: "fill" }} className={" border-solid border border-black " + color}>
+                                {text}
+                            </Tag>
+                        </div>
                     )
                 },
             },
@@ -200,7 +209,7 @@ export default function Contracts(props: IContractProps) {
         },
     } = tableInstance
 
-    let bgColor = (checks: any) => {
+    let bgColorAndText = (checks: any, status: string) => {
         let atleastOneErr = false
         let allOk = true
         for (const c of checks) {
@@ -208,14 +217,20 @@ export default function Contracts(props: IContractProps) {
                 case CheckStatus.ERROR:
                     atleastOneErr = true
                     allOk = false
-                    return "bg-red-600"
+                    return ["bg-red-600", "WITH ERROR"]
                 case CheckStatus.NOTSET:
                     allOk = false
                     break
             }
         }
         if (allOk) {
-            return "bg-green-600"
+            return ["bg-green-600", "NO ERROR"]
+        }
+        if (status === "NEW") {
+            return ["", "NEW"]
+        }
+        if (status === "IN_PROGRESS") {
+            return ["bg-yellow-600", "IN PROGRESS"]
         }
         return ""
     }
@@ -260,7 +275,7 @@ export default function Contracts(props: IContractProps) {
                     page.map(row => {
                         // Prepare the row for display
                         prepareRow(row)
-                        let color = bgColor(row.original.checks)
+                        let color = bgColorAndText(row.original.checks, row.original.status)[0]
                         return (
                             // Apply the row prop
                             <React.Fragment>
@@ -295,9 +310,9 @@ export default function Contracts(props: IContractProps) {
                         )
                     })}
             </tbody>
-            <div className="w-auto mx-auto">
-                <ButtonGroup>
+            <div className="flex w-auto mx-auto mt-4">
 
+                <ButtonGroup>
                     <Button icon="double-chevron-left" onClick={() => gotoPage(0)} disabled={!canPreviousPage} />
                     <Button icon="chevron-left" onClick={() => previousPage()} disabled={!canPreviousPage} />
 
@@ -307,6 +322,10 @@ export default function Contracts(props: IContractProps) {
 
                     <Button icon="chevron-right" onClick={() => nextPage()} disabled={!canNextPage} />
                     <Button icon="double-chevron-right" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage} />
+                    <Button disabled={!rows.filter(r => r.isSelected).some(r => r.original.status === "NEW")} intent="primary" text="Register" onClick={() => {
+                        let selected = rows.filter(row => row.isSelected && row.original.status === "NEW").map(row => row.index)
+                        props.registerDocs(selected)
+                    }} />
                 </ButtonGroup>
 
                 {/* <HTMLSelect
