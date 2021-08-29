@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { Card, Colors, Elevation, H2, OL } from '@blueprintjs/core';
 import React, { useState } from 'react'
 

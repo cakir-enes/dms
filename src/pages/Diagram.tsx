@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React from 'react'
 import ContentEditable from '../components/Base/ContentEditable'
 import { Button, Intent } from '@blueprintjs/core'
