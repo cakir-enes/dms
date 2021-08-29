@@ -82,7 +82,11 @@ export default function Contracts(props: IContractProps) {
         },
         {
             Header: "Contract Info",
-            accessor: "meta"
+            accessor: "meta",
+            Cell: ({ value }) => {
+                console.log(value.split("\n"))
+                return <div>{value.split("\n").map(v => (<><span>{v}</span><br /></>))} </div>
+            }
         },
         // todo custom
         // {
@@ -181,10 +185,29 @@ export default function Contracts(props: IContractProps) {
         },
     } = tableInstance
 
+    let bgColor = (checks: any) => {
+        let atleastOneErr = false
+        let allOk = true
+        for (const c of checks) {
+            switch (c.status) {
+                case CheckStatus.ERROR:
+                    atleastOneErr = true
+                    allOk = false
+                    return "bg-red-600"
+                case CheckStatus.NOTSET:
+                    allOk = false
+                    break
+            }
+        }
+        if (allOk) {
+            return "bg-green-600"
+        }
+        return ""
+    }
 
-    return <Card>
+    return <Card className="h-screen">
         <H1>Contracts</H1>
-        <HTMLTable className={Classes.HTML_TABLE_STRIPED + " " + Classes.INTERACTIVE} {...getTableProps()}>
+        <HTMLTable className={Classes.HTML_TABLE_STRIPED + " mx-auto " + Classes.INTERACTIVE} {...getTableProps()}>
             <thead>
                 {// Loop over the header rows
                     headerGroups.map(headerGroup => (
@@ -217,16 +240,17 @@ export default function Contracts(props: IContractProps) {
                 </tr>
             </thead>
             {/* Apply the table body props */}
-            <tbody {...getTableBodyProps()}>
+            <tbody className="h-24" {...getTableBodyProps()}>
                 {// Loop over the table rows
                     // console.log("PAAAGE", page)
                     page.map(row => {
                         // Prepare the row for display
                         prepareRow(row)
+                        let color = bgColor(row.original.checks)
                         return (
                             // Apply the row prop
                             <React.Fragment>
-                                <tr {...row.getRowProps()} onClick={() => row.toggleRowExpanded()}>
+                                <tr className={color}  {...row.getRowProps()} onClick={() => row.toggleRowExpanded()}>
                                     {row.cells.map((cell) => {
                                         return (
                                             <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
@@ -234,7 +258,7 @@ export default function Contracts(props: IContractProps) {
                                     })}
                                 </tr>
                                 {row.isExpanded ? (
-                                    <tr>
+                                    <tr className={color}>
                                         <td colSpan={visibleColumns.length}>
                                             {<Card>
                                                 {row.original.checks.map(check => {
@@ -257,51 +281,34 @@ export default function Contracts(props: IContractProps) {
                         )
                     })}
             </tbody>
-        </HTMLTable >
-        <div className="pagination">
-            <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-                {'<<'}
-            </button>{' '}
-            <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-                {'<'}
-            </button>{' '}
-            <button onClick={() => nextPage()} disabled={!canNextPage}>
-                {'>'}
-            </button>{' '}
-            <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-                {'>>'}
-            </button>{' '}
-            <span>
-                Page{' '}
-                <strong>
-                    {pageIndex + 1} of {pageOptions.length}
-                </strong>{' '}
-            </span>
-            <span>
-                | Go to page:{' '}
-                <NumericInput
-                    type="number"
-                    defaultValue={pageIndex + 1}
-                    onChange={e => {
-                        const page = e.target.value ? Number(e.target.value) - 1 : 0
-                        gotoPage(page)
-                    }}
+            <div className="w-auto mx-auto">
+                <ButtonGroup>
 
-                />
-            </span>{' '}
-            <HTMLSelect
-                value={pageSize}
-                onChange={e => {
-                    setPageSize(Number(e.target.value))
-                }}
-            >
-                {[10, 20, 30, 40, 50].map(pageSize => (
-                    <option key={pageSize} value={pageSize}>
-                        Show {pageSize}
-                    </option>
-                ))}
-            </HTMLSelect>
-        </div>
+                    <Button icon="double-chevron-left" onClick={() => gotoPage(0)} disabled={!canPreviousPage} />
+                    <Button icon="chevron-left" onClick={() => previousPage()} disabled={!canPreviousPage} />
+
+                    <strong className="w-8 mt-1">
+                        {pageIndex + 1} / {pageOptions.length}
+                    </strong>
+
+                    <Button icon="chevron-right" onClick={() => nextPage()} disabled={!canNextPage} />
+                    <Button icon="double-chevron-right" onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage} />
+                </ButtonGroup>
+
+                {/* <HTMLSelect
+                    value={pageSize}
+                    onChange={e => {
+                        setPageSize(Number(e.target.value))
+                    }}
+                >
+                    {[10, 20, 30, 40, 50].map(pageSize => (
+                        <option key={pageSize} value={pageSize}>
+                            Show {pageSize}
+                        </option>
+                    ))}
+                </HTMLSelect> */}
+            </div>
+        </HTMLTable >
     </Card >
 }
 
@@ -426,6 +433,7 @@ function SelectColumnFilter({
 
     return (
         <StringMultiSelect
+            className="w-40"
             itemRenderer={renderOpt}
             tagRenderer={t => <Tag minimal>{t}</Tag>}
             items={["KIEV", "LVIV", "URFA", "SAMSUN"].filter(v => !filterValue.includes(v))}
