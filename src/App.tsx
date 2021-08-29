@@ -91,7 +91,7 @@ const App = () => {
 
           <Route exact path='/dashboard'>
             <Menubar page={"Dashboard"} />
-            <Dashboard />
+            <Dashboard data={data}/>
           </Route>
 
           <Route exact path="/">
