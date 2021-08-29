@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Diagram from "./pages/Diagram";
 import { BrowserRouter, Switch, Route, useRouteMatch, Link, Redirect } from "react-router-dom";
-import { Alignment, Button, Card, Navbar, NavbarDivider } from '@blueprintjs/core';
+import { Alignment, Button, ButtonGroup, Card, Icon, Navbar, NavbarDivider } from '@blueprintjs/core';
 import Contracts, { CheckStatus, IContractProps } from "./pages/Contracts"
 import Dashboard from './pages/Dashboard';
 
@@ -26,14 +26,22 @@ const Menubar = (props: { page: string }) => {
 
   return <Navbar fixedToTop>
     <Navbar.Group align={Alignment.LEFT}>
-      <Navbar.Heading className="w-36 font-bold text-xl">{props.page}</Navbar.Heading>
+      <Navbar.Heading className="w-3 font-bold text-xl">{props.page}</Navbar.Heading>
       <Navbar.Divider />
-      <Button icon="document" minimal>
-        <Link className="text-gray-400" to="/contracts">Contracts</Link>
-      </Button>
-      <Button icon="dashboard" minimal>
-        <Link className="text-gray-400" to="/dashboard">Dashboard</Link>
-      </Button>
+      <ButtonGroup minimal className="ml-20">
+
+
+        <Link className="text-gray-400" to="/contracts">
+          <Button>Contracts</Button>
+        </Link>
+
+        <Link className="text-gray-400" to="/dashboard">
+          <Button>
+            Dashboard
+          </Button>
+
+        </Link>
+      </ButtonGroup>
     </Navbar.Group>
     <Navbar.Group align={Alignment.RIGHT}>
       <span className="font-semibold">Serbulent Basgaaan</span>
