@@ -104,7 +104,9 @@ export default function Contracts(props: IContractProps) {
             Header: "Checks",
             accessor: "checks",
             disableFilters: true,
-            Cell: ({ value }) => (<div className="flex space-x-1">{value.map(v => <Tag intent={mapCheckStatusIntent(v.status)}>{v.code}</Tag>)}</div>)
+            Cell: ({ value }) => (<div className="flex space-x-1">
+                {value.map(v => <Tag className="border-solid border border-black" intent={mapCheckStatusIntent(v.status)}>{v.code}</Tag>)}
+            </div>)
         }
     ], [])
 
@@ -218,8 +220,7 @@ export default function Contracts(props: IContractProps) {
         return ""
     }
 
-    return <Card className="h-screen">
-        <H1>Contracts</H1>
+    return <div className="mt-14">
         <HTMLTable className={Classes.HTML_TABLE_STRIPED + " mx-auto " + Classes.INTERACTIVE} {...getTableProps()}>
             <thead>
                 {// Loop over the header rows
@@ -322,7 +323,7 @@ export default function Contracts(props: IContractProps) {
                 </HTMLSelect> */}
             </div>
         </HTMLTable >
-    </Card >
+    </div>
 }
 
 
