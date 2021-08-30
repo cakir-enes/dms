@@ -79,6 +79,18 @@ const App = () => {
     })
   }
 
+  let setByTemplate = (template : any ,docs: number[]) => {
+    setData(data => {
+      docs.forEach(i => {
+        for (let x = 0; x < data[i].checks.length; x++) {
+          data[i].checks[x].status = template.original.checks[x].status
+        }
+        data[i].status = template.original.status
+      })
+      return [...data]
+    })
+  }
+
   return (
     <div className="bp4-dark">
 
@@ -86,7 +98,7 @@ const App = () => {
         <Switch>
           <Route exact path='/contracts'>
             <Menubar page={"Contracts"} />
-            <Contracts data={data} checkStatus={checkStatus} registerDocs={registerDocs} />
+            <Contracts data={data} checkStatus={checkStatus} registerDocs={registerDocs} setByTemplate={setByTemplate} />
           </Route>
 
           <Route exact path='/dashboard'>
