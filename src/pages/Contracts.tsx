@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Button, ButtonGroup, Callout, Card, Checkbox, Classes, Divider, H1, H5, HTMLSelect, HTMLTable, Icon, InputGroup, Intent, MenuItem, NumericInput, Tag } from "@blueprintjs/core"
 import {
     useTable,
@@ -147,7 +147,7 @@ export default function Contracts(props: IContractProps) {
 
 
     //@ts-ignore
-    const tableInstance = useTable({ columns: cols, data, defaultColumn, filterTypes, autoResetExpanded: false,autoResetSelectedRows: false, autoResetFilters: false }, useFilters, useGlobalFilter, useExpanded, usePagination, useRowSelect, hooks => {
+    const tableInstance = useTable({ columns: cols, data, defaultColumn, filterTypes, autoResetExpanded: false, autoResetSelectedRows: false, autoResetFilters: false }, useFilters, useGlobalFilter, useExpanded, usePagination, useRowSelect, hooks => {
         hooks.visibleColumns.push(cols => ([
             {
                 id: 'selection',
@@ -331,12 +331,12 @@ export default function Contracts(props: IContractProps) {
                         props.registerDocs(selected)
                     }} />
                     <Button disabled={!(rows.filter(r => r.isSelected).length === 1)} intent="primary" text="Set As Template" onClick={() => {
-                        template.current = rows.filter(r => r.isSelected).[0]
+                        template.current = rows.filter(r => r.isSelected)[0]
                         console.log(template.current);
                         console.log(template.current === undefined)
                     }} />
                     <Button disabled={!template.current} intent="primary" text="Apply Template" onClick={() => {
-                        let selected = rows.filter(row => row.isSelected && row.index !==template.current.index).map(row => row.index)
+                        let selected = rows.filter(row => row.isSelected && row.index !== template.current.index).map(row => row.index)
                         console.log(template.current)
                         console.log(selected)
                         props.setByTemplate(template.current, selected)
