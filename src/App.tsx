@@ -44,7 +44,7 @@ const Menubar = (props: { page: string }) => {
       </ButtonGroup>
     </Navbar.Group>
     <Navbar.Group align={Alignment.RIGHT}>
-      <span className="font-semibold">Serbulent Basgaaan</span>
+      <span className="font-semibold">Vitaliia Kindra</span>
       <Button icon="log-out" minimal />
     </Navbar.Group>
   </Navbar>

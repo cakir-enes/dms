@@ -157,10 +157,12 @@ export default function Contracts(props: IContractProps) {
                 Header: (opts) => {
                     return (
                         <div>
-                            {/* <Checkbox {...opts.getToggleAllPageRowsSelectedProps()} /> */}
+                            {/* <div>asdasd</div> */}
                         </div>
                     )
                 },
+
+
                 // The cell can use the individual row's getToggleRowSelectedProps method
                 // to the render a checkbox
                 Cell: ({ row }) => {
