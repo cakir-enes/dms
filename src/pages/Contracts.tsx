@@ -270,7 +270,7 @@ export default function Contracts(props: IContractProps) {
     }
 
     return <div className="mt-14">
-        <HTMLTable className={Classes.HTML_TABLE_STRIPED + " mx-auto " + Classes.INTERACTIVE} {...getTableProps()}>
+        <HTMLTable className={Classes.HTML_TABLE_STRIPED + " mx-auto " + Classes.INTERACTIVE + " mx-4"} {...getTableProps()}>
             <thead>
                 {// Loop over the header rows
                     headerGroups.map(headerGroup => (
