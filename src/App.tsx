@@ -1,23 +1,26 @@
-import React, {useState} from 'react'
-import {BrowserRouter, Link, Redirect, Route, Switch} from "react-router-dom";
-import {Alignment, Button, ButtonGroup, Navbar} from '@blueprintjs/core';
-import Contracts, {CheckStatus} from "./pages/Contracts"
+import React, { useState } from 'react'
+import { BrowserRouter, Link, Redirect, Route, Switch } from "react-router-dom";
+import { Alignment, Button, ButtonGroup, Navbar } from '@blueprintjs/core';
+import Contracts, { CheckStatus } from "./pages/Contracts"
 import Dashboard from './pages/Dashboard';
 
 let genData = () => {
-  let data = Array.from({ length: 50 }).map((_, i) => ({
-    line: "LINE" + i,
-    contractID: "CONTRACT-" + i,
-    fullName: "FULL NAME",
-    company: "REDDLYNE INC",
-    region: "KIEV",
-    dealer: "TURKCELL IBO",
-    store: "MKEMAL STORE",
-    type: "corp-prepaid",
-    date: new Date().toISOString(),
-    status: "NEW",
-    checks: [{ code: "SC", name: "Signature is valid", status: CheckStatus.NOTSET }, { code: "NP", name: "Photo exists", status: CheckStatus.NOTSET }]
-  }))
+  let data = Array.from({ length: 50 }).map((_, i) => {
+    i += 1
+    return ({
+      line: "LINE" + i,
+      contractID: "CONTRACT-" + i,
+      fullName: "FULL NAME-" + i,
+      company: "CORPORATE-" + i,
+      region: "KIEV",
+      dealer: "DEALER " + i,
+      store: "STORE-" + i,
+      type: "corp-prepaid",
+      date: new Date().toLocaleString(),
+      status: "NEW",
+      checks: [{ code: "SC", name: "Subscriber Card", status: CheckStatus.NOTSET }, { code: "NP", name: "Contract", status: CheckStatus.NOTSET }]
+    })
+  })
   return data
 }
 
@@ -60,11 +63,13 @@ const App = () => {
       if (c) {
         c.status = status
       }
-      if(d[i].checks.some(c => c.status === CheckStatus.ERROR)){
+      if (d[i].checks.some(c => c.status === CheckStatus.ERROR)) {
         d[i].status = "WITH_ERR"
       }
-      if(d[i].checks.filter(c => c.status === CheckStatus.CHECKED).length === d[i].checks.length){
+      if (d[i].checks.filter(c => c.status === CheckStatus.CHECKED).length === d[i].checks.length) {
         d[i].status = "NO_ERR"
+      } else {
+        d[i].status = "IN_PROGRESS"
       }
       return [...d]
     })
@@ -79,7 +84,7 @@ const App = () => {
     })
   }
 
-  let setByTemplate = (template : any ,docs: number[]) => {
+  let setByTemplate = (template: any, docs: number[]) => {
     setData(data => {
       docs.forEach(i => {
         for (let x = 0; x < data[i].checks.length; x++) {
@@ -103,7 +108,7 @@ const App = () => {
 
           <Route exact path='/dashboard'>
             <Menubar page={"Dashboard"} />
-            <Dashboard data={data}/>
+            <Dashboard data={data} />
           </Route>
 
           <Route exact path="/">

@@ -19,8 +19,9 @@ export interface IDashboardProps {
 }
 
 import {/* @vite-ignore */ BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    PieChart, Pie, Sector} from 'recharts';
-import {CheckStatus} from "./Contracts";
+    PieChart, Pie, Sector
+} from 'recharts';
+import { CheckStatus } from "./Contracts";
 
 const data = Array.from({ length: 12 }).map((v, i) => {
     i += 1
@@ -96,35 +97,35 @@ export default function Dashboard(props: IDashboardProps) {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="new" fill={Colors.VERMILION2} />
+                    <Bar dataKey="new" fill={Colors.GRAY3} />
                     <Bar dataKey="error" fill={Colors.RED3} />
                     <Bar dataKey="success" fill={Colors.GREEN3} />
-                    <Bar dataKey="inprogress" fill={Colors.ORANGE3} />
+                    <Bar dataKey="inprogress" fill={Colors.ORANGE2} />
                 </BarChart>
 
-                    <PieChart width={1000} height={550}>
-                        <Legend />
-                        <Pie
-                            data={[
-                                { name: 'NEW', value: props.data.filter(d => d.status === "NEW").length },
-                                { name: 'NO ERROR', value: props.data.filter(d => d.status === "NO_ERR").length },
-                                { name: 'IN PROGRESS', value: props.data.filter(d => d.status === "IN_PROGRESS").length },
-                                { name: 'WITH ERROR', value: props.data.filter(d => d.status === "WITH_ERR").length },
-                            ]}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={renderCustomizedLabel}
-                            outerRadius={150}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label
-                        >
-                            {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                    </PieChart>
+                <PieChart width={1000} height={550}>
+                    <Legend />
+                    <Pie
+                        data={[
+                            { name: 'NEW', value: props.data.filter(d => d.status === "NEW").length },
+                            { name: 'NO ERROR', value: props.data.filter(d => d.status === "NO_ERR").length },
+                            { name: 'IN PROGRESS', value: props.data.filter(d => d.status === "IN_PROGRESS").length },
+                            { name: 'WITH ERROR', value: props.data.filter(d => d.status === "WITH_ERR").length },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={renderCustomizedLabel}
+                        outerRadius={150}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label
+                    >
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Pie>
+                </PieChart>
             </Card>
 
 

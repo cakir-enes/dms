@@ -99,7 +99,6 @@ export default function Contracts(props: IContractProps) {
             Header: "Contract Info",
             accessor: "meta",
             Cell: ({ value }) => {
-                console.log(value.split("\n"))
                 return <div>{value.split("\n").map(v => (<><span>{v}</span><br /></>))} </div>
             }
         },
@@ -239,6 +238,37 @@ export default function Contracts(props: IContractProps) {
         return ""
     }
 
+    let [err, setErr] = useState<any>({})
+
+
+    let toggleErr = (contract, checkCode, errorOpt) => {
+
+        let pre = contract + checkCode
+        let id = pre + errorOpt
+        setErr(e => {
+            let newStatus = !e[id]
+            e[id] = newStatus
+            if (newStatus) {
+                props.checkStatus(contract, checkCode, CheckStatus.ERROR)
+            } else {
+                console.log([e[pre + "MSD"], e[pre + "MP"], e[pre + "MIC"], e[pre + "MCN"]])
+                if ([e[pre + "MSD"], e[pre + "MP"], e[pre + "MIC"], e[pre + "MCN"]].every(s => !s)) {
+                    console.log("ERRURUUR", e)
+                    props.checkStatus(contract, checkCode, CheckStatus.NOTSET)
+                    props.registerDocs([rows.findIndex(r => r.original.contractID === contract)])
+                }
+            }
+            return ({ ...e, [id]: newStatus })
+        }
+        )
+    }
+
+    let checkDoc = (contract, checkCode) => {
+        let pre = contract + checkCode
+        props.checkStatus(contract, checkCode, CheckStatus.CHECKED)
+        setErr(e => ({ ...e, [pre + "MSD"]: false, [pre + "MP"]: false, [pre + "MIC"]: false, [pre + "MCN"]: false }))
+    }
+
     return <div className="mt-14">
         <HTMLTable className={Classes.HTML_TABLE_STRIPED + " mx-auto " + Classes.INTERACTIVE} {...getTableProps()}>
             <thead>
@@ -295,13 +325,21 @@ export default function Contracts(props: IContractProps) {
                                         <td colSpan={visibleColumns.length}>
                                             {<Card>
                                                 {row.original.checks.map(check => {
+
                                                     return (
                                                         <div style={{ display: "flex" }}>
                                                             <span className={"w-44 text-base font-bold my-auto"}>{check.name}</span>
                                                             <ButtonGroup>
-                                                                <Button intent={check.status == CheckStatus.CHECKED ? "success" : "none"} minimal large icon="tick" onClick={() => props.checkStatus(row.original.contractID, check.code, CheckStatus.CHECKED)} />
+                                                                <Button intent={check.status == CheckStatus.CHECKED ? "success" : "none"} minimal large icon="tick" onClick={() => checkDoc(row.original.contractID, check.code)} />
                                                                 <Divider />
-                                                                <Button intent={check.status == CheckStatus.ERROR ? "danger" : "none"} minimal large icon="cross" onClick={() => props.checkStatus(row.original.contractID, check.code, CheckStatus.ERROR)} />
+                                                                <ButtonGroup minimal>
+                                                                    <Button onClick={() => toggleErr(row.original.contractID, check.code, "MSD")} intent={err[row.original.contractID + check.code + "MSD"] ? Intent.DANGER : Intent.NONE} text="Missing Dealer Signature" />
+                                                                    <Button onClick={() => toggleErr(row.original.contractID, check.code, "MP")} intent={err[row.original.contractID + check.code + "MP"] ? Intent.DANGER : Intent.NONE} text="Missing Photo" />
+                                                                    <Button onClick={() => toggleErr(row.original.contractID, check.code, "MIC")} intent={err[row.original.contractID + check.code + "MIC"] ? Intent.DANGER : Intent.NONE} text="Missing Identity Copy" />
+                                                                    <Button onClick={() => toggleErr(row.original.contractID, check.code, "MCN")} intent={err[row.original.contractID + check.code + "MCN"] ? Intent.DANGER : Intent.NONE} text="Missing Company Name" />
+                                                                    {/* <Button onClick={() => setErr(e => ({...e, [row.original + check.code]: true}))} intent={err[row.original + check.code] ? Intent.DANGER : Intent.NONE} text="Invalid Signature" /> */}
+                                                                </ButtonGroup>
+                                                                {/* <Button intent={check.status == CheckStatus.ERROR ? "danger" : "none"} minimal large icon="cross" onClick={() => props.checkStatus(row.original.contractID, check.code, CheckStatus.ERROR)} /> */}
                                                             </ButtonGroup>
                                                         </div>
                                                     )
@@ -340,6 +378,24 @@ export default function Contracts(props: IContractProps) {
                         console.log(template.current)
                         console.log(selected)
                         props.setByTemplate(template.current, selected)
+                        let templateID = template.current.original.contractID
+
+                        let ids = (pre) => {
+                            return ["SC", "NP"].flatMap(code => ([pre + code + "MSD",
+                            pre + code + "MP",
+                            pre + code + "MIC",
+                            pre + code + "MCN"]))
+                        }
+
+                        setErr(e => {
+                            let tempIds = ids(templateID)
+                            for (const i of selected) {
+                                ids(rows[i].original.contractID).forEach((id, i) => {
+                                    e[id] = e[tempIds[i]]
+                                })
+                            }
+                            return { ...e }
+                        })
                     }} />
                 </ButtonGroup>
 
