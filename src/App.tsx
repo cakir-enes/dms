@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
-import Diagram from "./pages/Diagram";
-import { BrowserRouter, Switch, Route, useRouteMatch, Link, Redirect } from "react-router-dom";
-import { Alignment, Button, ButtonGroup, Card, Icon, Navbar, NavbarDivider } from '@blueprintjs/core';
-import Contracts, { CheckStatus, IContractProps } from "./pages/Contracts"
+import React, {useState} from 'react'
+import {BrowserRouter, Link, Redirect, Route, Switch} from "react-router-dom";
+import {Alignment, Button, ButtonGroup, Navbar} from '@blueprintjs/core';
+import Contracts, {CheckStatus} from "./pages/Contracts"
 import Dashboard from './pages/Dashboard';
 
 let genData = () => {
@@ -61,6 +60,12 @@ const App = () => {
       if (c) {
         c.status = status
       }
+      if(d[i].checks.some(c => c.status === CheckStatus.ERROR)){
+        d[i].status = "WITH_ERR"
+      }
+      if(d[i].checks.filter(c => c.status === CheckStatus.CHECKED).length === d[i].checks.length){
+        d[i].status = "NO_ERR"
+      }
       return [...d]
     })
   }
@@ -74,6 +79,18 @@ const App = () => {
     })
   }
 
+  let setByTemplate = (template : any ,docs: number[]) => {
+    setData(data => {
+      docs.forEach(i => {
+        for (let x = 0; x < data[i].checks.length; x++) {
+          data[i].checks[x].status = template.original.checks[x].status
+        }
+        data[i].status = template.original.status
+      })
+      return [...data]
+    })
+  }
+
   return (
     <div className="bp4-dark">
 
@@ -81,12 +98,12 @@ const App = () => {
         <Switch>
           <Route exact path='/contracts'>
             <Menubar page={"Contracts"} />
-            <Contracts data={data} checkStatus={checkStatus} registerDocs={registerDocs} />
+            <Contracts data={data} checkStatus={checkStatus} registerDocs={registerDocs} setByTemplate={setByTemplate} />
           </Route>
 
           <Route exact path='/dashboard'>
             <Menubar page={"Dashboard"} />
-            <Dashboard />
+            <Dashboard data={data}/>
           </Route>
 
           <Route exact path="/">
